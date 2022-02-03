@@ -1,6 +1,6 @@
 from clock import Clock  # imports the clock class
+from scan import Scan   # imports the scan class
 import lcddriver
-import os
 
 lcd = lcddriver.lcd()
 lcd.lcd_clear()
@@ -12,8 +12,8 @@ def main():
     print(Clock.time())
     lcd.lcd_clear()
     lcd.lcd_display_string(Clock.time() + " " + Clock.date(), 1)
-    os.system("sudo airmon-ng start wlan0")
-    os.system("kismet -c wlan0mon")
+    Scan.setup()
+
 
 
 if __name__ == '__main__':
