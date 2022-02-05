@@ -1,40 +1,24 @@
 import pcapy
-import sys
-import os
-import datetime
+import impacket
+import hashlib
+from impacket.ImpactDecoder import RadioTapDecoder
 
 
-class Scan:  # constructs the Scan class
+class Scan:
+    DECODER = RadioTapDecoder()
 
-    @staticmethod
-    def setup():
-        os.system("sudo airmon-ng start wlan1")
-        if len(sys.argv) != 2:
-            print("Available devices:")
-            print()
-            devices = pcapy.findalldevs()
+    def packet_handler(self, header, data):
+        radio_packet = self.DECODER.decode(data)
+        dot11 = radio_packet.child()
+        management_base = dot11.child()
+        if management_base.__class__ == impacket.dot11.Dot11ManagementFrame:
+            s_address = management_base.get_source_address()
+            d_address = management_base.get_destination_address()
 
-            for device in devices:
-                print(device)
+            parsed_s_address = "".join('{:02x}:'.format(x) for x in s_address)[:-1]
+            parsed_s_address_stringed = parsed_s_address.encode("utf-8")
+            parsed_s_address_hashed = hashlib.sha512(parsed_s_address_stringed).hexdigest()
 
-            print()
-            print("Usage: ./%s deviceName", sys.argv[0])
-            exit()
+            return parsed_s_address_hashed
 
-        dev = sys.argv[1]
 
-        print("Done. If you don't see any data, the monitor mode setup may have failed.")
-
-        cap = pcapy.open_live(dev, 65536, True, 0)
-
-        print()
-        print("Listening on %s: net=%s, mask=%s, linktype=%d" % (dev, cap.getnet(), cap.getmask(), cap.datalink()))
-
-        (header, payload) = cap.next()
-        while header:
-            print('%s: captured %d bytes, truncated to %d bytes'
-                  % (datetime.datetime.now(), header.getlen(), header.getcaplen()))
-
-            # TODO: Implement python-impacket in order to decode the captured packet and show his information
-
-            (header, payload) = cap.next()
