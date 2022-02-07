@@ -38,8 +38,6 @@ def addpackets(header, data):
         if routers_hashed not in router_list:
             router_list.append(routers_hashed)
 
-
-
     if packet is not None:
         for address in packet:
             if address not in packets:

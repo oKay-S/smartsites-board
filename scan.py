@@ -109,25 +109,6 @@ class Scan:
 
             return addresses
 
-        elif management_base.__class__ == impacket.dot11.Dot11ControlFrameRTS:
-            s_address = management_base.get_ta()
-            d_address = management_base.get_ra()
-
-            parsed_s_address = "".join('{:02x}:'.format(x) for x in s_address)[:-1]
-            parsed_s_address_stringed = parsed_s_address.encode("utf-8")
-            parsed_s_address_stringed_upper = parsed_s_address_stringed.upper()
-            parsed_s_address_hashed = hashlib.sha512(parsed_s_address_stringed_upper).hexdigest()
-
-            parsed_d_address = "".join('{:02x}:'.format(x) for x in d_address)[:-1]
-            parsed_d_address_stringed = parsed_d_address.encode("utf-8")
-            parsed_d_address_stringed_upper = parsed_d_address_stringed.upper()
-            parsed_d_address_hashed = hashlib.sha512(parsed_d_address_stringed_upper).hexdigest()
-
-            addresses.append(parsed_s_address_hashed)
-            addresses.append(parsed_d_address_hashed)
-
-            return addresses
-
         elif management_base.__class__ == impacket.dot11.Dot11ControlFrameACK:
                 s_address = management_base.get_ta()
                 d_address = management_base.get_ra()
