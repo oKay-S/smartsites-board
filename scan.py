@@ -1,8 +1,6 @@
 import impacket
 import hashlib
-from scapy.all import *
 from impacket.ImpactDecoder import RadioTapDecoder
-from scapy.layers.dot11 import Dot11Beacon
 
 
 class Scan:

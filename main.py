@@ -7,7 +7,6 @@ import subprocess
 
 from scan import Scan  # imports the scan class
 import lcddriver
-import os
 
 scan = Scan()
 
@@ -44,7 +43,7 @@ def addpackets(header, data):
                 if address not in router_list:
                     packets.append(address)
     else:
-        print("packet")
+        print("improper packet")
 
     if (lastprinttime + 60) < time.time():
         lastprinttime = time.time()
