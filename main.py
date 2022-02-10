@@ -4,6 +4,8 @@ import time
 import hashlib
 import pcapy
 import subprocess
+import websockets
+import asyncio
 
 from scan import Scan  # imports the scan class
 import lcddriver
@@ -18,9 +20,18 @@ packets = []
 router_list = []
 lastprinttime = time.time()
 
+HOST = 'smartsites.kieransoutter.com'  # The server's hostname or IP address
+PORT = 443  # The port used by the server
+
 mac_match = re.compile("[A-Za-z0-9]{2}:[A-Za-z0-9]{2}:[A-Za-z0-9]{2}:[A-Za-z0-9]{2}:[A-Za-z0-9]{2}:[A-Za-z0-9]{2}",
                        flags=re.I)
 
+async def socket(msg):
+    async with websockets.connect("wss://smartsites.kieransoutter.com") as websocket:
+        print("socket opened")
+        await websocket.send("bkjsafey834tw." + msg)
+        await websocket.recv()
+        print("socket closed")
 
 def addpackets(header, data):
     global lastprinttime
@@ -62,15 +73,17 @@ def addpackets(header, data):
     if (lastprinttime + 300) < time.time():
         lastprinttime = time.time()
         lcd.lcd_clear()
-        print("a minute passes!")
+        print("5 minutes pass!")
         length = len(packets)
         lengthstr = str(length)
-        lcd.lcd_display_string("Number of", 1)
         lcd.lcd_display_string("Devices: " + lengthstr, 2)
-        time.sleep(1)
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(socket(lengthstr))
 
         print(packets)
         packets = []
+
 
 
 def main():
@@ -88,7 +101,24 @@ def main():
             lcd.lcd_clear()
             lcd.lcd_display_string("Scanning", 1)
             lcd.lcd_display_string("Active", 2)
-            p.loop(-1, addpackets)
+            try:
+                msg = "0"
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(socket(msg))
+                lcd.lcd_clear()
+                lcd.lcd_display_string("Socket", 1)
+                lcd.lcd_display_string("Tested", 2)
+                try:
+                    p.loop(-1, addpackets)
+                except:
+                    lcd.lcd_clear()
+                    lcd.lcd_display_string("Loop", 1)
+                    lcd.lcd_display_string("failed", 2)
+            except Exception as err:
+                lcd.lcd_clear()
+                lcd.lcd_display_string("Socket", 1)
+                lcd.lcd_display_string("failed", 2)
+                print(err)
         except:
             lcd.lcd_clear()
             lcd.lcd_display_string("Scanning", 1)
@@ -96,7 +126,7 @@ def main():
     except:
         lcd.lcd_clear()
         lcd.lcd_display_string("Scanner", 1)
-        lcd.lcd_display_string("Failed ", 2)
+        lcd.lcd_display_string("failed ", 2)
 
 
 if __name__ == '__main__':
