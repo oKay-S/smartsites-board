@@ -29,8 +29,9 @@ mac_match = re.compile("[A-Za-z0-9]{2}:[A-Za-z0-9]{2}:[A-Za-z0-9]{2}:[A-Za-z0-9]
 async def socket(msg):
     async with websockets.connect("wss://smartsites.kieransoutter.com") as websocket:
         print("socket opened")
-        await websocket.send("bkjsafey834tw." + msg)
-        await websocket.recv()
+        if msg is not None:
+            await websocket.send("bkjsafey834tw." + msg)
+            await websocket.recv()
         print("socket closed")
 
 def addpackets(header, data):
@@ -102,7 +103,7 @@ def main():
             lcd.lcd_display_string("Scanning", 1)
             lcd.lcd_display_string("Active", 2)
             try:
-                msg = "0"
+                msg = None
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(socket(msg))
                 lcd.lcd_clear()
